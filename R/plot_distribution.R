@@ -103,6 +103,9 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
   # Create base plot
   p <- ggplot2::ggplot(data, ggplot2::aes(x = value))
   
+  # Reverse colors so rightmost group gets first color (green), leftmost gets last
+  reversed_colors <- rev(group_colors[1:n_groups])
+  
   # Add histogram if specified (combined for all groups)
   if (!is.null(bins)) {
     p <- p +
@@ -112,14 +115,15 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
         alpha = 0.35,
         position = "identity"
       ) +
-      ggplot2::scale_fill_manual(values = group_colors[1:n_groups])
+      ggplot2::scale_fill_manual(values = reversed_colors)
   }
   
   # Add density curves and statistics for each group
   for (i in 1:n_groups) {
     group_data <- data |> dplyr::filter(group == group_labels[i])
     if (nrow(group_data) > 0) {
-      group_color <- group_colors[i]
+      # Use reversed color: rightmost group (highest i) gets first color
+      group_color <- reversed_colors[i]
       mean_val <- mean(group_data$value, na.rm = TRUE)
       sd_val <- sd(group_data$value, na.rm = TRUE)
       
@@ -149,9 +153,10 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
     }
   }
   
-  # Add vertical lines at group boundaries with next group's color
+  # Add vertical lines at group boundaries with the color of the group to the right
   for (i in 1:length(groups)) {
-    boundary_color <- group_colors[i + 1]  # Use next group's color
+    # Group i+1 is to the right of boundary i, and uses reversed_colors[i+1]
+    boundary_color <- reversed_colors[i + 1]
     p <- p +
       ggplot2::geom_vline(
         xintercept = groups[i],
