@@ -32,6 +32,15 @@
 #' }
 #' @export
 findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combinations = TRUE) {
+  # Handle NA removal
+  if (remove.na) {
+    x <- x[!is.na(x)]
+  } else {
+    if (any(is.na(x))) {
+      stop("'x' contains missing values")
+    }
+  }
+  
   # Key data information.
   ds <- data_summary(x)
 
@@ -72,29 +81,44 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
     })
 
     rmse <- cmpfun(function(params) {
-      sqrt(sum((do.call(
-        as.character(candidate$pf),
-        append(list(f.x), as.list(conv.params(params)))
-      ) - f.y)^2))
+      tryCatch({
+        result <- suppressWarnings(do.call(
+          as.character(candidate$pf),
+          append(list(f.x), as.list(conv.params(params)))
+        ))
+        # Check for non-finite values
+        if (any(!is.finite(result))) {
+          return(1e10)
+        }
+        error <- sqrt(sum((result - f.y)^2))
+        # Return large penalty if error is not finite
+        if (!is.finite(error)) {
+          return(1e10)
+        }
+        return(error)
+      }, error = function(e) {
+        # Return large penalty on any error
+        return(1e10)
+      })
     })
 
     if (sum(params_meta$discrete) > 0) {
       o <- GenSA(params_meta$initial, rmse,
         lower = params_meta$min, upper = params_meta$max,
         control = list(
-          maxit = 10000,
-          temperature = 5000,
-          max.call = 1e7,
-          threshold.stop = 1e-10
+          maxit = 100,
+          temperature = 100,
+          max.call = 1e4,
+          threshold.stop = 1e-4
         )
       )
     } else {
       o <- optim(params_meta$initial, rmse,
         lower = params_meta$min, upper = params_meta$max, method = "L-BFGS-B",
         control = list(
-          factr = 1e-10,
-          pgtol = 1e-10,
-          maxit = 10000
+          factr = 1e7,
+          pgtol = 1e-5,
+          maxit = 100
         )
       )
     }

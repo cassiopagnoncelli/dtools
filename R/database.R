@@ -140,7 +140,7 @@ insertPF(
   "chi squared", "dchisq", TRUE, "NONNEGATIVE",
   data.frame(
     name = c("df"),
-    min = c(0),
+    min = c(1),
     max = c(Inf),
     discrete = c(TRUE),
     initial = c(100)
@@ -152,7 +152,7 @@ insertPF(
   "t", "dt", TRUE, "REAL",
   data.frame(
     name = c("df"),
-    min = c(0),
+    min = c(1),
     max = c(Inf),
     discrete = c(TRUE),
     initial = c(100)
