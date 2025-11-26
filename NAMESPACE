@@ -2,3 +2,9 @@
 
 S3method(print,findpdf_result)
 export(findpdf)
+importFrom(GenSA,GenSA)
+importFrom(compiler,cmpfun)
+importFrom(graphics,hist)
+importFrom(stats,complete.cases)
+importFrom(stats,density)
+importFrom(stats,optim)

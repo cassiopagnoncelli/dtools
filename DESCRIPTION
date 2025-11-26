@@ -11,7 +11,6 @@ Authors@R:
 Description: An R package to find the probability density function (PDF) of a given dataset.
 License: file LICENSE
 Encoding: UTF-8
-LazyData: true
 Depends:
     R (>= 4.4.0),
     compiler,

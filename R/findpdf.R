@@ -17,6 +17,10 @@
 #'     \item{cdf}{Function; CDF of best-fitting distribution}
 #'     \item{best_fit}{Character; name of best-fitting distribution}
 #'   }
+#' @importFrom graphics hist
+#' @importFrom stats density optim
+#' @importFrom compiler cmpfun
+#' @importFrom GenSA GenSA
 #' @examples
 #' \dontrun{
 #' result <- findpdf(rnorm(100, mean = 5, sd = 2))

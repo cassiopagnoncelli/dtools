@@ -29,6 +29,8 @@ pfParamsDB <- list()
 #'   ), FALSE
 #' )
 #' }
+#' @keywords internal
+#' @noRd
 insertPF <- function(name, pf, discrete, domain, params, exotic = TRUE) {
   row <- data.frame(name = name, pf = pf, discrete = discrete, domain = domain, exotic = exotic)
   pfDB <<- rbind(pfDB, row)
