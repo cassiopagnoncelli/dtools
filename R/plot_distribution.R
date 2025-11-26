@@ -1,7 +1,7 @@
 #' Plot distribution with histogram and density overlay
 #'
 #' @param data Numeric vector or data frame with numeric column
-#' @param bins Number of histogram bins (default: NULL, uses Sturges' rule)
+#' @param bins Number of histogram bins (default: NULL, no histogram). Use "Sturges" for Sturges' rule or a numeric value.
 #' @param vline X-coordinate for vertical reference line (default: 0)
 #' @param title Plot title (default: "Distribution")
 #' @return ggplot2 object showing histogram with density curve and statistical markers
@@ -24,31 +24,37 @@ plot_distribution <- function(data, bins = NULL, vline = 0, title = "Distributio
     data <- tibble::tibble(value = data[[first_numeric]])
   }
 
-  # Calculate number of bins using Sturges' rule if not specified
-  if (is.null(bins)) {
+  # Calculate number of bins using Sturges' rule if specified
+  if (!is.null(bins) && bins == "Sturges") {
     n <- nrow(data)
-    bins <- ceiling(3.3 * log10(n) + 1)
+    bins <- 1 + ceiling(3.3322 * log10(n))
   }
 
   # Calculate statistics for labels
   mean_val <- mean(data$value, na.rm = TRUE)
   sd_val <- sd(data$value, na.rm = TRUE)
   
-  # Create histogram with density scale and smoothing curve
-  ggplot2::ggplot(data, ggplot2::aes(x = value)) +
-    ggplot2::geom_histogram(
-      ggplot2::aes(y = ggplot2::after_stat(density)),
-      bins = bins,
-      fill = "#851d91",
-      # color = "#676cce",
-      alpha = 0.7
-    ) +
+  # Create base plot
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = value))
+  
+  # Add histogram only if bins is specified
+  if (!is.null(bins)) {
+    p <- p +
+      ggplot2::geom_histogram(
+        ggplot2::aes(y = ggplot2::after_stat(density)),
+        bins = bins,
+        fill = "#329f32",
+        alpha = 0.35
+      )
+  }
+  
+  # Add density and other layers
+  p <- p +
     ggplot2::geom_density(
       ggplot2::aes(y = ggplot2::after_stat(density)),
-      fill = "#1d9146",
-      # color = "#2a965a",
-      alpha = .55,
-      linewidth = .2
+      fill = "#329f32",
+      alpha = .45,
+      linewidth = .1
     ) +
     ggplot2::geom_vline(
       xintercept = vline,
@@ -115,4 +121,6 @@ plot_distribution <- function(data, bins = NULL, vline = 0, title = "Distributio
     ggplot2::labs(title = title, x = "Value", y = "Density") +
     ggplot2::theme_minimal() +
     ggplot2::theme(panel.grid = ggplot2::element_blank())
+  
+  return(p)
 }

@@ -9,7 +9,7 @@ plot_distribution(data, bins = NULL, vline = 0, title = "Distribution")
 \arguments{
 \item{data}{Numeric vector or data frame with numeric column}
 
-\item{bins}{Number of histogram bins (default: NULL, uses Sturges' rule)}
+\item{bins}{Number of histogram bins (default: NULL, no histogram). Use "Sturges" for Sturges' rule or a numeric value.}
 
 \item{vline}{X-coordinate for vertical reference line (default: 0)}
 
