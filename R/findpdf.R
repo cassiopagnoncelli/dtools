@@ -90,10 +90,6 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
 
     ranking <- rbind(ranking, data.frame(pf = candidate$pf, error = o$value))
     best_params[[as.character(candidate$pf)]] <- conv.params(o$par)
-
-    if (o$counts[1] <= 2) {
-      print(o)
-    }
   }
 
   ranking <- ranking[order(ranking$error), ]
