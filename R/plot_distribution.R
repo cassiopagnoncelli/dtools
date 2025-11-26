@@ -65,58 +65,58 @@ plot_distribution <- function(data, bins = NULL, vline = 0, title = "Distributio
     ) +
     ggplot2::geom_vline(
       xintercept = mean_val,
-      color = "#000000",
+      color = "#329f32",
       linetype = "dashed",
       linewidth = .8
     ) +
     ggplot2::geom_vline(
       xintercept = mean_val + sd_val,
-      color = "#4e4e4e",
+      color = "#329f32",
       linetype = "dashed",
       linewidth = .5
     ) +
     ggplot2::geom_vline(
       xintercept = mean_val - sd_val,
-      color = "#4e4e4e",
+      color = "#329f32",
       linetype = "dashed",
       linewidth = .5
     ) +
     ggplot2::geom_vline(
       xintercept = mean_val + 2 * sd_val,
-      color = "#a3a3a3",
+      color = "#329f32",
       linetype = "dashed",
       linewidth = .35
     ) +
     ggplot2::geom_vline(
       xintercept = mean_val - 2 * sd_val,
-      color = "#a3a3a3",
+      color = "#329f32",
       linetype = "dashed",
       linewidth = .35
     ) +
     ggplot2::annotate(
       "text", x = mean_val, y = Inf,
       label = sprintf("μ=%.2f", mean_val),
-      vjust = 1.5, hjust = 0.5, size = 5, color = "#000000"
+      vjust = 1.5, hjust = -.2, size = 3, color = "#329f32"
     ) +
     ggplot2::annotate(
       "text", x = mean_val + sd_val, y = Inf,
       label = sprintf("+1σ=%.2f", mean_val + sd_val),
-      vjust = 1.5, hjust = 0.5, size = 4.5, color = "#4e4e4e"
+      vjust = 1.5, hjust = -.1, size = 2.8, color = "#329f32"
     ) +
     ggplot2::annotate(
       "text", x = mean_val - sd_val, y = Inf,
       label = sprintf("-1σ=%.2f", mean_val - sd_val),
-      vjust = 1.5, hjust = 0.5, size = 4.5, color = "#4e4e4e"
+      vjust = 1.5, hjust = 1.1, size = 2.8, color = "#329f32"
     ) +
     ggplot2::annotate(
       "text", x = mean_val + 2 * sd_val, y = Inf,
       label = sprintf("+2σ=%.2f", mean_val + 2 * sd_val),
-      vjust = 1.5, hjust = 0.5, size = 4.5, color = "#a3a3a3"
+      vjust = 1.5, hjust = -.1, size = 2.6, color = "#329f32"
     ) +
     ggplot2::annotate(
       "text", x = mean_val - 2 * sd_val, y = Inf,
       label = sprintf("-2σ=%.2f", mean_val - 2 * sd_val),
-      vjust = 1.5, hjust = 0.5, size = 4.5, color = "#a3a3a3"
+      vjust = 1.5, hjust = 1.1, size = 2.6, color = "#329f32"
     ) +
     ggplot2::labs(title = title, x = "Value", y = "Density") +
     ggplot2::theme_minimal() +
