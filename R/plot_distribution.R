@@ -60,12 +60,15 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
       ggplot2::geom_vline(xintercept = mean_val + sd_val, color = "#4e4e4e", linetype = "dashed", linewidth = .5) +
       ggplot2::geom_vline(xintercept = mean_val - sd_val, color = "#4e4e4e", linetype = "dashed", linewidth = .5) +
       ggplot2::geom_vline(xintercept = mean_val + 2 * sd_val, color = "#a3a3a3", linetype = "dashed", linewidth = .35) +
-      ggplot2::geom_vline(xintercept = mean_val - 2 * sd_val, color = "#a3a3a3", linetype = "dashed", linewidth = .35) +
-      ggplot2::annotate("text", x = mean_val, y = Inf, label = sprintf("μ=%.2f", mean_val), vjust = -0.3, hjust = 0.5, size = 5, color = "#000000") +
-      ggplot2::annotate("text", x = mean_val + sd_val, y = Inf, label = sprintf("+1σ=%.2f", mean_val + sd_val), vjust = -0.3, hjust = 0.5, size = 3.5, color = "#7e7e7e") +
-      ggplot2::annotate("text", x = mean_val - sd_val, y = Inf, label = sprintf("-1σ=%.2f", mean_val - sd_val), vjust = -0.3, hjust = 0.5, size = 3.5, color = "#7e7e7e") +
-      ggplot2::annotate("text", x = mean_val + 2 * sd_val, y = Inf, label = sprintf("+2σ=%.2f", mean_val + 2 * sd_val), vjust = -0.3, hjust = 0.5, size = 3, color = "#c0c0c0") +
-      ggplot2::annotate("text", x = mean_val - 2 * sd_val, y = Inf, label = sprintf("-2σ=%.2f", mean_val - 2 * sd_val), vjust = -0.3, hjust = 0.5, size = 3, color = "#c0c0c0") +
+      ggplot2::geom_vline(xintercept = mean_val - 2 * sd_val, color = "#a3a3a3", linetype = "dashed", linewidth = .35)
+    
+    # Create legend text
+    legend_text <- sprintf("μ=%.2f  σ=%.2f", mean_val, sd_val)
+    
+    p <- p +
+      ggplot2::annotate("label", x = Inf, y = Inf, label = legend_text, 
+                       hjust = 1.05, vjust = 1.1, size = 3.5, 
+                       fill = "white", alpha = 0.9, label.padding = ggplot2::unit(0.25, "lines")) +
       ggplot2::labs(title = title, x = "Value", y = "Density") +
       ggplot2::theme_minimal() +
       ggplot2::theme(panel.grid = ggplot2::element_blank())
@@ -118,7 +121,9 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
       ggplot2::scale_fill_manual(values = reversed_colors)
   }
   
-  # Add density curves and statistics for each group
+  # Add density curves and statistics for each group, collect legend data
+  legend_data <- list()
+  
   for (i in 1:n_groups) {
     group_data <- data |> dplyr::filter(group == group_labels[i])
     if (nrow(group_data) > 0) {
@@ -126,6 +131,9 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
       group_color <- reversed_colors[i]
       mean_val <- mean(group_data$value, na.rm = TRUE)
       sd_val <- sd(group_data$value, na.rm = TRUE)
+      
+      # Store for legend
+      legend_data[[i]] <- list(color = group_color, mean = mean_val, sd = sd_val)
       
       # Add density curve for this group
       p <- p +
@@ -144,14 +152,29 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
         ggplot2::geom_vline(xintercept = mean_val - sd_val, color = group_color, linetype = "dashed", linewidth = .5, alpha = 0.6) +
         ggplot2::geom_vline(xintercept = mean_val + 2 * sd_val, color = group_color, linetype = "dashed", linewidth = .35, alpha = 0.4) +
         ggplot2::geom_vline(xintercept = mean_val - 2 * sd_val, color = group_color, linetype = "dashed", linewidth = .35, alpha = 0.4)
-      
-      # Add annotations
-      p <- p +
-        ggplot2::annotate("text", x = mean_val, y = Inf, label = sprintf("μ%d=%.2f", i, mean_val), vjust = -0.3 - (i - 1) * 0.8, hjust = 0.5, size = 4, color = group_color) +
-        ggplot2::annotate("text", x = mean_val + sd_val, y = Inf, label = sprintf("+1σ%d", i), vjust = -0.3 - (i - 1) * 0.8, hjust = 0.5, size = 3, color = group_color) +
-        ggplot2::annotate("text", x = mean_val - sd_val, y = Inf, label = sprintf("-1σ%d", i), vjust = -0.3 - (i - 1) * 0.8, hjust = 0.5, size = 3, color = group_color)
     }
   }
+  
+  # Build simple legend with colored squares and text
+  legend_lines <- sapply(legend_data, function(item) {
+    sprintf("\u25A0 μ=%.2f σ=%.2f", item$mean, item$sd)
+  })
+  legend_text <- paste(legend_lines, collapse = "\n")
+  
+  # Create a data frame for colored squares overlay
+  legend_df <- data.frame(
+    x = rep(Inf, length(legend_data)),
+    y = Inf,
+    color = sapply(legend_data, function(x) x$color),
+    stringsAsFactors = FALSE
+  )
+  
+  # Add plain text legend
+  p <- p +
+    ggplot2::annotate("label", x = Inf, y = Inf, label = legend_text,
+                     hjust = 1.05, vjust = 1.05, size = 3,
+                     fill = "white", alpha = 0.9,
+                     label.padding = ggplot2::unit(0.25, "lines"))
   
   # Add vertical lines at group boundaries with the color of the group to the right
   for (i in 1:length(groups)) {
