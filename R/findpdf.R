@@ -7,17 +7,19 @@
 #' @param include.exotics Logical; include exotic distributions (default: FALSE)
 #' @param remove.na Logical; remove NA values before fitting (default: TRUE)
 #' @param search.combinations Logical; search parameter combinations (default: TRUE)
-#' @return List with components:
+#' @return An S3 object of class 'findpdf_result' with components:
 #'   \describe{
 #'     \item{params}{Named list of optimal parameters for each distribution}
 #'     \item{ranking}{Data frame with columns 'pf' (function name) and 'error' (RMSE),
 #'                    sorted by best fit}
+#'     \item{data_summary}{Summary statistics of the input data}
 #'   }
 #' @examples
 #' \dontrun{
 #' result <- findpdf(rnorm(100))
-#' head(result$ranking)  # View top distributions
-#' result$params$dnorm   # Get fitted normal parameters
+#' print(result)            # Pretty-printed output
+#' result$params$dnorm      # Access fitted normal parameters
+#' result$ranking           # View full ranking table
 #' }
 #' @export
 findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combinations = TRUE) {
@@ -47,7 +49,7 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
   for (i in seq_along(candidates)) {
     candidate <- candidates[i, ]
 
-    params_meta <- get(paste("pfParamsDB$", candidate$pf, sep = ""))
+    params_meta <- pfParamsDB[[as.character(candidate$pf)]]
 
     conv.params <- cmpfun(function(params) {
       b <- as.logical(params_meta$discrete)
@@ -94,8 +96,52 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
 
   ranking <- ranking[order(ranking$error), ]
 
-  list(
+  result <- list(
     params = best_params,
-    ranking = ranking
+    ranking = ranking,
+    data_summary = ds
   )
+  class(result) <- "findpdf_result"
+  
+  result
+}
+
+#' Print method for findpdf results
+#'
+#' @param x A findpdf_result object
+#' @param n Maximum number of distributions to display (default: 10)
+#' @param ... Additional arguments (unused)
+#' @export
+print.findpdf_result <- function(x, n = 10, ...) {
+  cat("\nBest-Fitting Probability Distributions\n")
+  cat("=======================================\n\n")
+  
+  cat("Data Summary:\n")
+  cat(sprintf("  Type: %s\n", ifelse(x$data_summary$is_discrete, "Discrete", "Continuous")))
+  cat(sprintf("  N: %d\n", x$data_summary$n))
+  cat(sprintf("  Range: [%.4f, %.4f]\n", x$data_summary$min, x$data_summary$max))
+  cat(sprintf("  Mean: %.4f, SD: %.4f\n\n", x$data_summary$mean, x$data_summary$sd))
+  
+  cat("Top Distributions (by RMSE):\n")
+  n_show <- min(n, nrow(x$ranking))
+  
+  for (i in 1:n_show) {
+    pf_name <- as.character(x$ranking$pf[i])
+    error <- x$ranking$error[i]
+    params <- x$params[[pf_name]]
+    
+    cat(sprintf("%2d. %s (RMSE: %.6f)\n", i, pf_name, error))
+    
+    if (length(params) > 0) {
+      param_str <- paste(sprintf("%.4f", params), collapse = ", ")
+      cat(sprintf("    Parameters: [%s]\n", param_str))
+    }
+  }
+  
+  if (nrow(x$ranking) > n) {
+    cat(sprintf("\n... and %d more distributions\n", nrow(x$ranking) - n))
+  }
+  
+  cat("\nAccess components: $params, $ranking, $data_summary\n")
+  invisible(x)
 }

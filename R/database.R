@@ -3,13 +3,9 @@
 #
 
 # Pdf and pmf database.
-assign(
-  "pfDB",
-  data.frame(name = c(), pf = c(), discrete = c(), domain = c(), exotic = c()),
-  envir = .GlobalEnv
-)
+pfDB <- data.frame(name = c(), pf = c(), discrete = c(), domain = c(), exotic = c())
 
-assign("pfParamsDB", list(), envir = .GlobalEnv)
+pfParamsDB <- list()
 
 #' Insert probability function into database
 #'
@@ -31,8 +27,8 @@ assign("pfParamsDB", list(), envir = .GlobalEnv)
 #' }
 insertPF <- function(name, pf, discrete, domain, params, exotic = TRUE) {
   row <- data.frame(name = name, pf = pf, discrete = discrete, domain = domain, exotic = exotic)
-  assign("pfDB", rbind(pfDB, row), envir = .GlobalEnv)
-  assign(paste("pfParamsDB$", pf, sep = ""), params, envir = .GlobalEnv)
+  pfDB <<- rbind(pfDB, row)
+  pfParamsDB[[pf]] <<- params
 }
 
 #

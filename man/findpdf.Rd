@@ -21,11 +21,12 @@ findpdf(
 \item{search.combinations}{Logical; search parameter combinations (default: TRUE)}
 }
 \value{
-List with components:
+An S3 object of class 'findpdf_result' with components:
 \describe{
 \item{params}{Named list of optimal parameters for each distribution}
 \item{ranking}{Data frame with columns 'pf' (function name) and 'error' (RMSE),
 sorted by best fit}
+\item{data_summary}{Summary statistics of the input data}
 }
 }
 \description{
@@ -35,7 +36,8 @@ testing candidates and ranking them by fitting error.
 \examples{
 \dontrun{
 result <- findpdf(rnorm(100))
-head(result$ranking)  # View top distributions
-result$params$dnorm   # Get fitted normal parameters
+print(result)            # Pretty-printed output
+result$params$dnorm      # Access fitted normal parameters
+result$ranking           # View full ranking table
 }
 }
