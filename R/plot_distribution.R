@@ -155,26 +155,35 @@ plot_distribution <- function(data, bins = NULL, groups = NULL, title = "Distrib
     }
   }
   
-  # Build simple legend with colored squares and text
-  legend_lines <- sapply(legend_data, function(item) {
-    sprintf("\u25A0 μ=%.2f σ=%.2f", item$mean, item$sd)
-  })
-  legend_text <- paste(legend_lines, collapse = "\n")
+  # Calculate plot range for positioning
+  x_range <- range(data$value, na.rm = TRUE)
+  x_width <- diff(x_range)
   
-  # Create a data frame for colored squares overlay
-  legend_df <- data.frame(
-    x = rep(Inf, length(legend_data)),
-    y = Inf,
-    color = sapply(legend_data, function(x) x$color),
-    stringsAsFactors = FALSE
-  )
+  # Add individual legend entries with colored squares and text
+  for (i in seq_along(legend_data)) {
+    item <- legend_data[[i]]
+    
+    # Position calculations (stacked from top)
+    square_x <- x_range[2] + 0.02 * x_width
+    text_x <- x_range[2] + 0.04 * x_width
+    y_offset <- (i - 1) * 0.08
+    
+    # Add colored square using geom_tile for proper color display
+    p <- p +
+      ggplot2::annotate("tile", x = square_x, y = 1 - 0.05 - y_offset,
+                       width = 0.01 * x_width, height = 0.03,
+                       fill = item$color, color = item$color)
+    
+    # Add text
+    legend_text <- sprintf("μ=%.2f σ=%.2f", item$mean, item$sd)
+    p <- p +
+      ggplot2::annotate("text", x = text_x, y = 1 - 0.05 - y_offset,
+                       label = legend_text, hjust = 0, vjust = 0.5,
+                       size = 4.5, fontface = "bold")
+  }
   
-  # Add plain text legend
-  p <- p +
-    ggplot2::annotate("label", x = Inf, y = Inf, label = legend_text,
-                     hjust = 1.05, vjust = 1.05, size = 3,
-                     fill = "white", alpha = 0.9,
-                     label.padding = ggplot2::unit(0.25, "lines"))
+  # Expand plot limits to accommodate legend
+  p <- p + ggplot2::coord_cartesian(xlim = c(x_range[1], x_range[2] + 0.25 * x_width), clip = "off")
   
   # Add vertical lines at group boundaries with the color of the group to the right
   for (i in 1:length(groups)) {
