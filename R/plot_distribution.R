@@ -5,6 +5,7 @@
 #' @param vline X-coordinate for vertical reference line (default: 0)
 #' @param title Plot title (default: "Distribution")
 #' @return ggplot2 object showing histogram with density curve and statistical markers
+#' @export
 #' @examples
 #' plot_distribution(rnorm(1000))
 #' plot_distribution(data.frame(x = rnorm(500)), vline = 1, title = "My Distribution")
@@ -36,14 +37,14 @@ plot_distribution <- function(data, bins = NULL, vline = 0, title = "Distributio
   # Create histogram with density scale and smoothing curve
   ggplot2::ggplot(data, ggplot2::aes(x = value)) +
     ggplot2::geom_histogram(
-      aes(y = ggplot2::after_stat(density)),
+      ggplot2::aes(y = ggplot2::after_stat(density)),
       bins = bins,
       fill = "#851d91",
       # color = "#676cce",
       alpha = 0.7
     ) +
     ggplot2::geom_density(
-      aes(y = ggplot2::after_stat(density)),
+      ggplot2::aes(y = ggplot2::after_stat(density)),
       fill = "#1d9146",
       # color = "#2a965a",
       alpha = .55,

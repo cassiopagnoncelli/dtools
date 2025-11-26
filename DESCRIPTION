@@ -8,7 +8,11 @@ Maintainer: Cassio Pagnoncelli <cassiopagnoncelli@gmail.com>
 Authors@R:
     person("Cassio", "Pagnoncelli", , "cassiopagnoncelli@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0000-7114-7008"))
-Description: 
+Description: Automatically identifies the best-fitting probability distributions for your data using
+    advanced optimization algorithms. Supports both continuous and discrete distributions, providing
+    ranked results with fitted parameters, PDF/CDF functions, and comprehensive statistical summaries.
+    Perfect for statistical analysis, simulation modeling, and understanding your data's underlying
+    distribution patterns.
 License: file LICENSE
 Encoding: UTF-8
 Depends:

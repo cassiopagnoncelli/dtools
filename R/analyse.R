@@ -4,6 +4,7 @@
 #' @param groups Numeric vector of threshold values to split data into groups (default: c(0))
 #' @param extreme_threshold Threshold for identifying extreme values (default: 1e15)
 #' @return List with overall_results (summary statistics and special value counts) and group_results (statistics per group)
+#' @export
 #' @examples
 #' analyse(rnorm(1000), groups = c(-1, 0, 1))
 analyse <- function(data, groups = c(0), extreme_threshold = 1e15) {
