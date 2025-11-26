@@ -70,12 +70,21 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
     if (sum(params_meta$discrete) > 0) {
       o <- GenSA(params_meta$initial, rmse,
         lower = params_meta$min, upper = params_meta$max,
-        control = list(maxit = 3000)
+        control = list(
+          maxit = 10000,
+          temperature = 5000,
+          max.call = 1e7,
+          threshold.stop = 1e-10
+        )
       )
     } else {
       o <- optim(params_meta$initial, rmse,
         lower = params_meta$min, upper = params_meta$max, method = "L-BFGS-B",
-        control = list()
+        control = list(
+          factr = 1e-10,
+          pgtol = 1e-10,
+          maxit = 10000
+        )
       )
     }
 
