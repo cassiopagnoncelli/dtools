@@ -16,11 +16,12 @@
 #'     \item{pdf}{Function; PDF/PMF of best-fitting distribution}
 #'     \item{cdf}{Function; CDF of best-fitting distribution}
 #'     \item{best_fit}{Character; name of best-fitting distribution}
+#'     \item{elapsed_time}{Numeric; total optimization time in seconds}
 #'   }
 #' @importFrom graphics hist
-#' @importFrom stats density optim
+#' @importFrom stats density
 #' @importFrom compiler cmpfun
-#' @importFrom GenSA GenSA
+#' @importFrom pso psoptim
 #' @examples
 #' \dontrun{
 #' result <- findpdf(rnorm(100, mean = 5, sd = 2))
@@ -32,6 +33,9 @@
 #' }
 #' @export
 findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combinations = TRUE) {
+  # Start timing
+  start_time <- Sys.time()
+  
   # Handle NA removal
   if (remove.na) {
     x <- x[!is.na(x)]
@@ -102,26 +106,27 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
       })
     })
 
-    if (sum(params_meta$discrete) > 0) {
-      o <- GenSA(params_meta$initial, rmse,
-        lower = params_meta$min, upper = params_meta$max,
-        control = list(
-          maxit = 100,
-          temperature = 100,
-          max.call = 1e4,
-          threshold.stop = 1e-4
-        )
+    # Use PSO for all optimization cases
+    # Convert infinite bounds to large finite values for PSO
+    lower_bounds <- params_meta$min
+    upper_bounds <- params_meta$max
+    
+    # Replace -Inf with large negative value
+    lower_bounds[is.infinite(lower_bounds) & lower_bounds < 0] <- -1e6
+    # Replace +Inf with large positive value
+    upper_bounds[is.infinite(upper_bounds) & upper_bounds > 0] <- 1e6
+    
+    o <- psoptim(params_meta$initial, rmse,
+      lower = lower_bounds, upper = upper_bounds,
+      control = list(
+        maxit = 150,
+        s = 30,
+        abstol = 1e-8,
+        reltol = 1e-6,
+        trace = 0,
+        REPORT = 1
       )
-    } else {
-      o <- optim(params_meta$initial, rmse,
-        lower = params_meta$min, upper = params_meta$max, method = "L-BFGS-B",
-        control = list(
-          factr = 1e7,
-          pgtol = 1e-5,
-          maxit = 100
-        )
-      )
-    }
+    )
 
     ranking <- rbind(ranking, data.frame(pf = candidate$pf, error = o$value))
     best_params[[as.character(candidate$pf)]] <- conv.params(o$par)
@@ -144,13 +149,18 @@ findpdf <- function(x, include.exotics = FALSE, remove.na = TRUE, search.combina
     do.call(cdf_name, c(list(x), as.list(best_params_vals)))
   }
 
+  # Calculate elapsed time
+  end_time <- Sys.time()
+  elapsed_time <- as.numeric(difftime(end_time, start_time, units = "secs"))
+  
   result <- list(
     params = best_params,
     ranking = ranking,
     data_summary = ds,
     pdf = pdf_func,
     cdf = cdf_func,
-    best_fit = best_dist
+    best_fit = best_dist,
+    elapsed_time = elapsed_time
   )
   class(result) <- "findpdf_result"
 
@@ -171,7 +181,12 @@ print.findpdf_result <- function(x, n = 10, ...) {
   cat(sprintf("  Type: %s\n", ifelse(x$data_summary$is_discrete, "Discrete", "Continuous")))
   cat(sprintf("  N: %d\n", x$data_summary$n))
   cat(sprintf("  Range: [%.4f, %.4f]\n", x$data_summary$min, x$data_summary$max))
-  cat(sprintf("  Mean: %.4f, SD: %.4f\n\n", x$data_summary$mean, x$data_summary$sd))
+  cat(sprintf("  Mean: %.4f, SD: %.4f\n", x$data_summary$mean, x$data_summary$sd))
+  
+  if (!is.null(x$elapsed_time)) {
+    cat(sprintf("  Elapsed Time: %.3f seconds\n", x$elapsed_time))
+  }
+  cat("\n")
 
   cat("Top Distributions (by RMSE):\n")
   n_show <- min(n, nrow(x$ranking))
@@ -194,6 +209,6 @@ print.findpdf_result <- function(x, n = 10, ...) {
   }
 
   cat("\nBest-fit functions: $pdf(x), $cdf(x)\n")
-  cat("Access components: $params, $ranking, $data_summary, $best_fit\n")
+  cat("Access components: $params, $ranking, $data_summary, $best_fit, $elapsed_time\n")
   invisible(x)
 }

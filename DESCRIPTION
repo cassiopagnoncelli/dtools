@@ -16,7 +16,7 @@ Depends:
 Imports:
     compiler,
     pso,
-    GenSA
+    tibble
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Suggests: 
