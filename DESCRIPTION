@@ -9,7 +9,6 @@ Authors@R:
     person("Cassio", "Pagnoncelli", , "cassiopagnoncelli@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0000-7114-7008"))
 Description: An R package to find the probability density function (PDF) of a given dataset.
-    If you think this relates to Acrobat PDF, you should regret dropping out of uni.
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
