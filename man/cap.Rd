@@ -4,19 +4,25 @@
 \alias{cap}
 \title{Cap distribution values at specified quantiles}
 \usage{
-cap(x, quantiles = c(0.001, 0.999))
+cap(x, quantiles = c(0.001, 0.999), policy = c("replace", "remove"))
 }
 \arguments{
 \item{x}{Numeric vector to cap}
 
 \item{quantiles}{Numeric vector of length 2 with lower and upper quantile thresholds (default: c(0.001, 0.999))}
+
+\item{policy}{String specifying the policy for handling outliers: "replace" (default) replaces outliers with quantile bounds, "remove" removes outliers from the dataset}
 }
 \value{
-Numeric vector with values capped at the specified quantiles
+Numeric vector with values either capped at or filtered by the specified quantiles, depending on the policy
 }
 \description{
 Cap distribution values at specified quantiles
 }
 \examples{
-cap(c(1:100, 1000), quantiles = c(0.05, 0.95))
+# Replace outliers with quantile bounds
+cap(c(1:100, 1000), quantiles = c(0.05, 0.95), policy = "replace")
+
+# Remove outliers from the dataset
+cap(c(1:100, 1000), quantiles = c(0.05, 0.95), policy = "remove")
 }
